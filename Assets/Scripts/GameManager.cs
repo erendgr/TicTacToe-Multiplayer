@@ -20,6 +20,9 @@ public class GameManager : NetworkBehaviour
         
     }
 
+    public event EventHandler OnGameStarted;
+    public event EventHandler OnCurrentPlayablePlayerTypeChanged;
+    
     public enum PlayerType
     {
         None,
@@ -73,8 +76,24 @@ public class GameManager : NetworkBehaviour
 
         if (IsServer)
         {
-            _currentPlayablePlayerType = PlayerType.Cross;
+            NetworkManager.Singleton.OnClientConnectedCallback += NetworkManager_OnClientConnectedCallBack;
         }
+    }
+
+    private void NetworkManager_OnClientConnectedCallBack(ulong obj)
+    {
+        if (Unity.Netcode.NetworkManager.Singleton.ConnectedClientsList.Count == 2)
+        {
+            //game started
+            _currentPlayablePlayerType = PlayerType.Cross;
+            TriggerOnGameStartedRpc();
+        }
+    }
+
+    [Rpc(SendTo.ClientsAndHost)]
+    private void TriggerOnGameStartedRpc()
+    {
+        OnGameStarted?.Invoke(this, EventArgs.Empty);
     }
     
     [Rpc(SendTo.Server)]
@@ -104,10 +123,22 @@ public class GameManager : NetworkBehaviour
                 _currentPlayablePlayerType = PlayerType.Cross;
                 break;
         }
+        TriggerOnCurrentPlayablePlayerTypeChangedRpc();
     }
 
+    [Rpc(SendTo.ClientsAndHost)]
+    private void TriggerOnCurrentPlayablePlayerTypeChangedRpc()
+    {
+        OnCurrentPlayablePlayerTypeChanged?.Invoke(this, EventArgs.Empty);
+    }
+    
     public PlayerType GetLocalPlayerType()
     {
         return _localPlayerType;
+    }
+
+    public PlayerType GetCurrentPlayablePlayerType()
+    {
+        return _currentPlayablePlayerType;
     }
 }
