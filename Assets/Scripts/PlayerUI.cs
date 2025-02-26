@@ -12,7 +12,7 @@ public class PlayerUI : MonoBehaviour
 
     private void Start()
     {
-        GameManager.Instance.OnGameStarted += GameManager_OngameStarted;
+        GameManager.Instance.OnGameStarted += GameManager_OnGameStarted;
         GameManager.Instance.OnCurrentPlayablePlayerTypeChanged += GameManager_OnCurrentPlayablePlayerTypeChanged;
     }
 
@@ -21,7 +21,7 @@ public class PlayerUI : MonoBehaviour
         UpdateCurrentArrow();
     }
 
-    private void GameManager_OngameStarted(object sender, EventArgs e)
+    private void GameManager_OnGameStarted(object sender, EventArgs e)
     {
         if (GameManager.Instance.GetLocalPlayerType() == GameManager.PlayerType.Cross)
         {

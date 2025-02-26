@@ -31,7 +31,7 @@ public class GameManager : NetworkBehaviour
     }
 
     private PlayerType _localPlayerType;
-    private PlayerType _currentPlayablePlayerType;
+    private NetworkVariable<PlayerType> _currentPlayablePlayerType = new NetworkVariable<PlayerType>();
     
     private void Awake()
     {
@@ -78,6 +78,11 @@ public class GameManager : NetworkBehaviour
         {
             NetworkManager.Singleton.OnClientConnectedCallback += NetworkManager_OnClientConnectedCallBack;
         }
+
+        _currentPlayablePlayerType.OnValueChanged += (PlayerType oldPlayerType, PlayerType newPlayerType) =>
+        {
+            OnCurrentPlayablePlayerTypeChanged?.Invoke(this, EventArgs.Empty);
+        };
     }
 
     private void NetworkManager_OnClientConnectedCallBack(ulong obj)
@@ -85,7 +90,7 @@ public class GameManager : NetworkBehaviour
         if (Unity.Netcode.NetworkManager.Singleton.ConnectedClientsList.Count == 2)
         {
             //game started
-            _currentPlayablePlayerType = PlayerType.Cross;
+            _currentPlayablePlayerType.Value = PlayerType.Cross;
             TriggerOnGameStartedRpc();
         }
     }
@@ -101,7 +106,7 @@ public class GameManager : NetworkBehaviour
     {
         Debug.Log("ClickedOnGridPosition: " + x + ", " + y);
 
-        if (playerType != _currentPlayablePlayerType)
+        if (playerType != _currentPlayablePlayerType.Value)
         {
             return;
         }
@@ -113,24 +118,19 @@ public class GameManager : NetworkBehaviour
             playerType = playerType,
         });
 
-        switch (_currentPlayablePlayerType)
+        switch (_currentPlayablePlayerType.Value)
         {
             default:
             case PlayerType.Cross:
-                _currentPlayablePlayerType = PlayerType.Circle;
+                _currentPlayablePlayerType.Value = PlayerType.Circle;
                 break;
             case PlayerType.Circle:
-                _currentPlayablePlayerType = PlayerType.Cross;
+                _currentPlayablePlayerType.Value = PlayerType.Cross;
                 break;
         }
-        TriggerOnCurrentPlayablePlayerTypeChangedRpc();
     }
 
-    [Rpc(SendTo.ClientsAndHost)]
-    private void TriggerOnCurrentPlayablePlayerTypeChangedRpc()
-    {
-        OnCurrentPlayablePlayerTypeChanged?.Invoke(this, EventArgs.Empty);
-    }
+    
     
     public PlayerType GetLocalPlayerType()
     {
@@ -139,6 +139,6 @@ public class GameManager : NetworkBehaviour
 
     public PlayerType GetCurrentPlayablePlayerType()
     {
-        return _currentPlayablePlayerType;
+        return _currentPlayablePlayerType.Value;
     }
 }
