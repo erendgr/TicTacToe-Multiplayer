@@ -2662,8 +2662,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 75852fc3bc93a71419d0db34ba658f1a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  crossPrefab: {fileID: 1761613928934215139, guid: 3692efd0c1329dd4cbe18152c8017b5c, type: 3}
+  crossPrefab: {fileID: 1761613928934215139, guid: e4df9db1e1050184a9aa381be9ac512b, type: 3}
   circlePrefab: {fileID: 1761613928934215139, guid: 039c8e8b27f83f342aef579bd889d479, type: 3}
+  lineCompletePrefab: {fileID: 9143925913368060675, guid: 9ffed8216e952ed42a3a23af568bde1f, type: 3}
 --- !u!4 &1700031196
 Transform:
   m_ObjectHideFlags: 0

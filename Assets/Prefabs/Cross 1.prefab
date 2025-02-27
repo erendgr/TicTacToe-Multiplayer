@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 7007040460450943841}
   - component: {fileID: 73278398557022465}
   m_Layer: 0
-  m_Name: Cross
+  m_Name: Cross 1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

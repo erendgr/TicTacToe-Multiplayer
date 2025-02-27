@@ -7,12 +7,37 @@ public class GameVisualManager : NetworkBehaviour
     
     [SerializeField] private GameObject crossPrefab;
     [SerializeField] private GameObject circlePrefab;
+    [SerializeField] private GameObject lineCompletePrefab;
 
     private void Start()
     {
         GameManager.Instance.OnClickedOnGridPosition += GameManager_OnClickedOnGridPosition;
+        GameManager.Instance.OnGameWin += GameManager_OnGameWin;
     }
-
+    
+    private void GameManager_OnGameWin(object sender, GameManager.OnGameWinEventArgs e)
+    {
+        float eulerZ = 0f;
+        switch (e.line.orientation)
+        {
+            default:
+            case GameManager.Orientation.Horizontal: eulerZ = 0f; break; 
+            case GameManager.Orientation.Vertical: eulerZ = 90f; break;
+            case GameManager.Orientation.DiagonalA: eulerZ = 45f; break;
+            case GameManager.Orientation.DiagonalB: eulerZ = -45f; break;
+        }
+        // GameObject lineCompleteInstance = Instantiate(lineCompletePrefab, 
+        //     GetGridWorldPosition(e.centerGridPosition.x, e.centerGridPosition.y), Quaternion.identity);
+        // lineCompleteInstance.GetComponent<NetworkObject>().Spawn(true);
+        InstantiateLineComplete(e.line.centerGridPosition.x, e.line.centerGridPosition.y, eulerZ);
+    }
+    
+    private void InstantiateLineComplete(int x, int y, float eulerZ)
+    {
+        GameObject lineCompleteInstance = Instantiate(lineCompletePrefab, 
+            GetGridWorldPosition(x, y), Quaternion.Euler(0f, 0f, eulerZ));
+        lineCompleteInstance.GetComponent<NetworkObject>().Spawn(true);
+    }
     private void GameManager_OnClickedOnGridPosition(object sender, GameManager.OnClickedOnGridPositionEventArgs e)
     {
         Debug.Log("gamemanager: OnClickedOnGridPosition");
@@ -35,8 +60,8 @@ public class GameVisualManager : NetworkBehaviour
                 break;
         }
         Debug.Log("spawn object");
-        GameObject spawnedCrossTransform = Instantiate(prefab, GetGridWorldPosition(x, y), Quaternion.identity);
-        spawnedCrossTransform.GetComponent<NetworkObject>().Spawn(true);
+        GameObject spawnedCrossInstance = Instantiate(prefab, GetGridWorldPosition(x, y), Quaternion.identity);
+        spawnedCrossInstance.GetComponent<NetworkObject>().Spawn(true);
     }
     
     private Vector2 GetGridWorldPosition(int x, int y)
