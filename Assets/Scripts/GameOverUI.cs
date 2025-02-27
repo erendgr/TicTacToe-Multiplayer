@@ -11,7 +11,6 @@ public class GameOverUI : MonoBehaviour
     [SerializeField] private Color drawColor;
     [SerializeField] private Button rematchButton;
 
-
     private void Awake()
     {
         rematchButton.onClick.AddListener(() =>
