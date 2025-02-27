@@ -16,9 +16,6 @@ public class GameManager : NetworkBehaviour
         public PlayerType playerType; 
         
     }
-
-    public event EventHandler OnGameStarted;
-    public event EventHandler OnCurrentPlayablePlayerTypeChanged;
     public event EventHandler<OnGameWinEventArgs> OnGameWin;
     public class OnGameWinEventArgs : EventArgs
     {
@@ -26,13 +23,18 @@ public class GameManager : NetworkBehaviour
         public PlayerType winPlayerType;
     }
     
+
+    public event EventHandler OnGameStarted;
+    public event EventHandler OnCurrentPlayablePlayerTypeChanged;
+    public event EventHandler OnRematch;
+    
+    
     public enum PlayerType
     {
         None,
         Cross,
         Circle
     }
-
     public enum Orientation
     {
         Horizontal,
@@ -40,7 +42,6 @@ public class GameManager : NetworkBehaviour
         DiagonalA,
         DiagonalB
     }
-
     public struct Line
     {
         public List<Vector2Int> gridVector2IntList;
@@ -48,10 +49,12 @@ public class GameManager : NetworkBehaviour
         public Orientation orientation;
     }
     
+    
     private PlayerType _localPlayerType;
     private NetworkVariable<PlayerType> _currentPlayablePlayerType = new NetworkVariable<PlayerType>();
     private PlayerType[,] playerTypeArray;
     private List<Line> lineList;
+    
     
     private void Awake()
     {
@@ -237,6 +240,27 @@ public class GameManager : NetworkBehaviour
             winPlayerType = winPlayerType,
         });
     }
+
+    [Rpc(SendTo.Server)]
+    public void RematchRpc()
+    {
+        for (int i = 0; i < playerTypeArray.GetLength(0); i++)
+        {
+            for (int j = 0; j < playerTypeArray.GetLength(1); j++)
+            {
+                playerTypeArray[i, j] = PlayerType.None;
+            }
+        }
+        _currentPlayablePlayerType.Value = PlayerType.Cross;
+        TriggerOnRematchRpc();
+    }
+
+    [Rpc(SendTo.ClientsAndHost)]
+    private void TriggerOnRematchRpc()
+    {
+        OnRematch?.Invoke(this, EventArgs.Empty);
+    }
+    
     public PlayerType GetLocalPlayerType()
     {
         return _localPlayerType;

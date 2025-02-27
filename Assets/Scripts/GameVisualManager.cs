@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -9,12 +11,34 @@ public class GameVisualManager : NetworkBehaviour
     [SerializeField] private GameObject circlePrefab;
     [SerializeField] private GameObject lineCompletePrefab;
 
+    private List<GameObject> visualGameObjectList;
+
+    private void Awake()
+    {
+        visualGameObjectList = new List<GameObject>();
+    }
+
     private void Start()
     {
         GameManager.Instance.OnClickedOnGridPosition += GameManager_OnClickedOnGridPosition;
         GameManager.Instance.OnGameWin += GameManager_OnGameWin;
+        GameManager.Instance.OnRematch += GameManager_OnRematch;
     }
-    
+
+    private void GameManager_OnRematch(object sender, EventArgs e)
+    {
+        if (!NetworkManager.Singleton.IsServer)
+        {
+            return;
+        }
+        
+        foreach (GameObject visualGameObjects in visualGameObjectList)
+        {
+            Destroy(visualGameObjects);
+        }
+        visualGameObjectList.Clear();
+    }
+
     private void GameManager_OnGameWin(object sender, GameManager.OnGameWinEventArgs e)
     {
         if (!NetworkManager.Singleton.IsServer)
@@ -42,6 +66,7 @@ public class GameVisualManager : NetworkBehaviour
         GameObject lineCompleteInstance = Instantiate(lineCompletePrefab, 
             GetGridWorldPosition(x, y), Quaternion.Euler(0f, 0f, eulerZ));
         lineCompleteInstance.GetComponent<NetworkObject>().Spawn(true);
+        visualGameObjectList.Add(lineCompleteInstance.gameObject);
     }
     private void GameManager_OnClickedOnGridPosition(object sender, GameManager.OnClickedOnGridPositionEventArgs e)
     {
@@ -67,6 +92,7 @@ public class GameVisualManager : NetworkBehaviour
         Debug.Log("spawn object");
         GameObject spawnedCrossInstance = Instantiate(prefab, GetGridWorldPosition(x, y), Quaternion.identity);
         spawnedCrossInstance.GetComponent<NetworkObject>().Spawn(true);
+        visualGameObjectList.Add(spawnedCrossInstance.gameObject);
     }
     
     private Vector2 GetGridWorldPosition(int x, int y)
